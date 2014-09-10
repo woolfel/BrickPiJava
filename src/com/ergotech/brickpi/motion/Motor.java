@@ -8,8 +8,7 @@
  */
 package com.ergotech.brickpi.motion;
 
-import com.ergotech.brickpi.BrickPi;
-import static com.ergotech.brickpi.BrickPi.decodeInt;
+import com.ergotech.brickpi.BrickPiCommunications;
 import java.util.BitSet;
 
 /**
@@ -24,7 +23,7 @@ public class Motor {
     };
 
     /**
-     * The current commanded output of the motor.  (0-255)
+     * The current commanded output of the motor. (0-255)
      */
     protected int commandedOutput;
 
@@ -39,7 +38,7 @@ public class Motor {
      * otherwise invalid.
      *
      */
-    protected int currentEncoderValue;
+    protected volatile int currentEncoderValue;
 
     /**
      * The current speed as read from the encoder. This value may be
@@ -47,13 +46,13 @@ public class Motor {
      * otherwise invalid.
      *
      */
-    protected double currentSpeed;
+    protected volatile double currentSpeed;
 
     /**
      * Last reading time. The last time the encoder value was update. Used to
      * calculate the speed.
      */
-    protected long lastReadingTime;
+    protected volatile long lastReadingTime;
 
     /**
      * The current commanded direction of the motor.
@@ -64,9 +63,26 @@ public class Motor {
      * Whether commanded enabled.
      */
     protected boolean enabled;
-    
-    /** The encoder offset. */
+
+    /**
+     * The encoder offset.
+     */
     protected int encoderOffset;
+
+    /**
+     * The target of a requested motion or zero if no motion is requested.
+     */
+    protected double rotations;
+
+    /**
+     * The encoder reading at the start of a requested rotation.
+     */
+    protected int encoderAtStartOfRotation;
+
+    /**
+     * The brick pi communications instance to which this motor is associated.
+     */
+    protected BrickPiCommunications brickPi;
 
     /**
      * Create the motor.
@@ -74,11 +90,28 @@ public class Motor {
     public Motor() {
         currentSpeed = Double.MAX_VALUE;
         currentEncoderValue = Integer.MAX_VALUE;
-        ticksPerRevolution = 720;
+        ticksPerRevolution = 1440;  // according to everything I've read, this should be 720;  The reality seems to be 1440 (for me)
+    }
+
+    /** returns the instance to which this Motor is associated.
+     * @return  the current BrickPi instance to which this Motor is associated, or null if it
+     * is not currently associated with a controller.
+    */
+    public BrickPiCommunications getBrickPi() {
+        return brickPi;
     }
     
-    /** Reset the encoder reading. */
-    public void resetEncoder () {
+    /** Set the instance to which this Motor is associated.
+     * @param brickPi the current BrickPi instance to which this Motor is associated, or null 
+     * to remove the association with a controller.*/
+    public void setBrickPi(BrickPiCommunications brickPi) {
+        this.brickPi = brickPi;
+    }
+
+    /**
+     * Reset the encoder reading.
+     */
+    public void resetEncoder() {
         encoderOffset = currentEncoderValue;
     }
 
@@ -107,7 +140,7 @@ public class Motor {
      * @return the current raw encoder value.
      */
     public int getCurrentEncoderValue() {
-        return currentEncoderValue-encoderOffset;
+        return currentEncoderValue - encoderOffset;
     }
 
     /**
@@ -193,17 +226,17 @@ public class Motor {
      */
     public void decodeValues(int wordLength, byte[] message, int startLocation) {
         long currentTime = System.currentTimeMillis();
-        int tmpEncoderValue = decodeInt(wordLength, message, startLocation);
+        int tmpEncoderValue = BrickPiCommunications.decodeInt(wordLength, message, startLocation);
         // if the encoder was reset before there was an encoder value, then this next clause 
         // kicks in as soon as we have a value.
-        if ( encoderOffset == Integer.MAX_VALUE ) {
+        if (encoderOffset == Integer.MAX_VALUE) {
             encoderOffset = tmpEncoderValue;
         }
         if (isEnabled()) { // don't calculate the speed if we're not enabled...
             if (currentEncoderValue != Integer.MAX_VALUE) {
                 double readingDifference = currentEncoderValue - tmpEncoderValue;
                 long timeDifference = currentTime - lastReadingTime;
-                System.out.println (" Motor Speed " + readingDifference + " " + timeDifference);
+                //System.out.println(" Motor Speed " + readingDifference + " " + timeDifference);
                 double immediateSpeed = Math.abs(readingDifference / timeDifference / ticksPerRevolution * 1000 * 60);
 //            // could run a little low-pass filtering here, but it needs to be corrected
 //            // for direction changes, etc.  - Just set currentEncoderValue and currentSpeed when speed or direction are set
@@ -219,12 +252,26 @@ public class Motor {
         }
         lastReadingTime = currentTime;
         currentEncoderValue = tmpEncoderValue;
+        if (rotations != 0) {
+            if (encoderAtStartOfRotation == Integer.MAX_VALUE) {
+                encoderAtStartOfRotation = currentEncoderValue;
+            } else {
+                int difference = currentEncoderValue - encoderAtStartOfRotation;
+                // let's hope the motors going in the correct direction or we'll 
+                // never hit this point
+                if (Math.abs(difference) > Math.abs(rotations * ticksPerRevolution)) {
+                    // we made it, stop here
+                    setCommandedOutput(0);
+                }
+            }
+        }
     }
 
     /**
      * Returns the commanded output
      *
-     * @return the commanded output +/-0-255 Negative indicates Counter Clockwise (however you choose to define that).
+     * @return the commanded output +/-0-255 Negative indicates Counter
+     * Clockwise (however you choose to define that).
      */
     public int getCommandedOutput() {
         int tmp = commandedOutput;
@@ -239,7 +286,8 @@ public class Motor {
      * Set the commanded output. For convenience the speed is set as an int
      * although the max is still 255.
      *
-     * @param commandedOutput +/- 0-255  Negative values indicate  Counter Clockwise (however you choose to define that).
+     * @param commandedOutput +/- 0-255 Negative values indicate Counter
+     * Clockwise (however you choose to define that).
      */
     public void setCommandedOutput(int commandedOutput) {
         // internally we'll keep a positive speed.
@@ -250,9 +298,11 @@ public class Motor {
             this.commandedOutput = commandedOutput;
             setDirection(Direction.CLOCKWISE);
         }
-        // wake up the update thread so that the values are immediately send to the brick pi
-        synchronized (BrickPi.getBrickPi()) {
-            BrickPi.getBrickPi().notify();
+        if (brickPi != null) {
+            // wake up the update thread so that the values are immediately send to the brick pi
+            synchronized (brickPi) {
+                brickPi.notify();
+            }
         }
 
     }
@@ -273,9 +323,11 @@ public class Motor {
      */
     public void setDirection(Direction direction) {
         this.direction = direction;
-        // wake up the update thread so that the values are immediately send to the brick pi
-        synchronized (BrickPi.getBrickPi()) {
-            BrickPi.getBrickPi().notify();
+        if (brickPi != null) {
+            // wake up the update thread so that the values are immediately send to the brick pi
+            synchronized (brickPi) {
+                brickPi.notify();
+            }
         }
     }
 
@@ -295,10 +347,29 @@ public class Motor {
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        // wake up the update thread so that the values are immediately send to the brick pi
-        synchronized (BrickPi.getBrickPi()) {
-            BrickPi.getBrickPi().notify();
+        if (brickPi != null) {
+            // wake up the update thread so that the values are immediately send to the brick pi
+            synchronized (brickPi) {
+                brickPi.notify();
+            }
         }
+    }
+
+    /**
+     * Rotate the motor a certain number of rotations and then stop. Fractional
+     * rotation (eg 0.25) are acceptable. Negative values imply
+     * counter-clockwise rotation.
+     *
+     * @param rotations the number of rotations to complete.
+     * @param commandedOutput the speed at which to perform the rotation.
+     *
+     */
+    public void rotate(double rotations, int commandedOutput) {
+        this.rotations = rotations;
+        encoderAtStartOfRotation = Integer.MAX_VALUE;
+        brickPi.setUpdateDelay(5); // increase the scan time
+        setCommandedOutput(commandedOutput);
+        setEnabled(true);
     }
 
 }

@@ -8,7 +8,7 @@
  */
 package com.ergotech.brickpi.sensors;
 
-import com.ergotech.brickpi.BrickPi;
+import com.ergotech.brickpi.BrickPiCommunications;
 
 /**
  * Representation of a Touch Sensor.
@@ -29,7 +29,7 @@ public class TouchSensor extends Sensor {
 
     @Override
     public int decodeValues(byte[] message, int startLocation) {
-        set = (BrickPi.decodeInt(1, message, startLocation++) != 0);
+        set = (BrickPiCommunications.decodeInt(1, message, startLocation++) != 0);
         return startLocation;
     }
 

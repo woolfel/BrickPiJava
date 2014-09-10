@@ -8,10 +8,10 @@
  */
 package com.ergotech.brickpi.sensors;
 
-import com.ergotech.brickpi.BrickPi;
+import com.ergotech.brickpi.BrickPiCommunications;
 
 /**
- * Representation of a Touch Sensor.
+ * Representation of a Ultrasonic Sensor.
  */
 public class UltraSonicSensor extends Sensor {
 
@@ -24,7 +24,7 @@ public class UltraSonicSensor extends Sensor {
 
     @Override
     public int decodeValues(byte[] message, int startLocation) {
-        value = BrickPi.decodeInt(8, message, startLocation);
+        value = BrickPiCommunications.decodeInt(8, message, startLocation);
         return startLocation + 8;
     }
 
