@@ -16,7 +16,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This class provides utility method for communication with the brick pi.
+ * This class provides utility method for communication remotely with the brick pi.
+ * 
+ * This approach assumes that a network to serial driver of some sort is running
+ * on the RPi.  It has been tested with ser2net.  The 500k baud setting requires
+ * ser2net version 2.8 or higher. 
+ * 
+ * Add this line to /etc/ser2net.conf
+ * 
+ * 3333:raw:0:/dev/ttyAMA0:500000 8DATABITS NONE 1STOPBIT
+ * 
+ * unless you have a reason to leave them there you should delete, or comment
+ * out all the other configuration lines.
+ * 
  */
 public class RemoteBrickPi extends BrickPiCommunications {
 
