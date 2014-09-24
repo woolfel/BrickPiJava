@@ -17,7 +17,7 @@ import java.util.BitSet;
  */
 public class Motor {
 
-    protected enum Direction {
+    public enum Direction {
 
         CLOCKWISE, COUNTER_CLOCKWISE
     };
