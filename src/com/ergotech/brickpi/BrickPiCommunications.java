@@ -12,8 +12,10 @@ import com.ergotech.brickpi.motion.Motor;
 import com.ergotech.brickpi.sensors.RawSensor;
 import com.ergotech.brickpi.sensors.Sensor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +28,7 @@ public abstract class BrickPiCommunications {
      * The current debug level.
      */
     public static int DEBUG_LEVEL = 0;
-
+    
     /**
      * It would seem to be a desirable, and fairly likely feature that the brick
      * pis could be made stackable. In this case we will have multiple slaves on
@@ -55,6 +57,9 @@ public abstract class BrickPiCommunications {
      * Set the timeout
      */
     public static final byte MSG_TYPE_TIMEOUT_SETTINGS = 5;
+
+    /** A list of event listeners .*/
+    public List<BrickPiUpdateListener> listeners;
 
     /**
      * The addresses of the 2 brick pi atmel chips. At this point in development
@@ -103,6 +108,7 @@ public abstract class BrickPiCommunications {
         sensorType = new Sensor[SERIAL_TARGETS * 2];
         motors = new Motor[SERIAL_TARGETS * 2];
         updateDelay = 100;
+        listeners = new ArrayList<BrickPiUpdateListener>();
     }
 
     /**
@@ -263,6 +269,10 @@ public abstract class BrickPiCommunications {
                         while (updateDelay > 0) {
                             try {
                                 updateValues();
+                                // notify listeners.
+                                for ( BrickPiUpdateListener listener : listeners ) {
+                                    listener.updateReceived(BrickPiCommunications.this);
+                                }
                                 synchronized (BrickPiCommunications.this) {
                                     BrickPiCommunications.this.wait(updateDelay);
                                 }
@@ -340,7 +350,7 @@ public abstract class BrickPiCommunications {
 //            Gives:  Temp_EncoderVal: 525060 [0]
 //            Gives:  Temp_EncoderVal: 4 [1]
 //            }
-            if (values[0] == MSG_TYPE_VALUES) { // hard to think it would be anything else
+            if (values != null && values[0] == MSG_TYPE_VALUES) { // hard to think it would be anything else
                 //BitSet incoming = BitSet.valueOf(values);
                 startingBitLocation = 8; // the message type is still in there, so forget that
                 // there are 5 bits associated with each of the encoders
@@ -433,4 +443,24 @@ public abstract class BrickPiCommunications {
         }
         throw lastioe;
     }
+    
+    /** Add a listener for update events.  This method only allows the same listener
+     * to be added once.
+     * @param listener a listener for update events.
+     */ 
+    public void addBrickPiUpdateListener(BrickPiUpdateListener listener) {
+        if ( !listeners.contains(listener) ) {
+            listeners.add(listener);
+        }
+    }
+
+    /** Remove a listener for update events. 
+     * @param listener a listener for update events.
+     */ 
+    public void removeBrickPiUpdateListener(BrickPiUpdateListener listener) {
+        while ( listeners.contains(listener) ) {
+            listeners.remove(listener);
+        }
+    }
+
 }
