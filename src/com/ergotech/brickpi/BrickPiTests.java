@@ -38,11 +38,16 @@ public class BrickPiTests {
         } catch (IOException ex) {
             Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
         }
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
         // add touch sensors to all the ports.
-        brickPi.setSensor(new RawSensor(), 0);
-        brickPi.setSensor(new UltraSonicSensor(), 1);
+        brickPi.setSensor(new RawSensor(), 3);
+        brickPi.setSensor(new UltraSonicSensor(), 0);
         brickPi.setSensor(new RawSensor(), 2);
-        brickPi.setSensor(new TouchSensor(), 3);
+        brickPi.setSensor(new TouchSensor(), 1);
         try {
             // configure the sensors
             brickPi.setupSensors();
