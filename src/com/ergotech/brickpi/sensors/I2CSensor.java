@@ -8,8 +8,6 @@
  */
 package com.ergotech.brickpi.sensors;
 
-import java.util.BitSet;
-
 /**
  *
  * @author jim

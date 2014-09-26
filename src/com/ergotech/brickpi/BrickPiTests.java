@@ -30,17 +30,24 @@ import java.util.logging.Logger;
 public class BrickPiTests {
 
     public static void main(String[] args) {
-        BrickPi brickPi = BrickPi.getBrickPi();
+        //BrickPi brickPi = BrickPi.getBrickPi();
+        RemoteBrickPi brickPi = new RemoteBrickPi();
+        brickPi.setPiAddress("192.168.5.101");
         try {
             brickPi.setTimeout(20000);
         } catch (IOException ex) {
             Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
         }
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
+        }
         // add touch sensors to all the ports.
-        brickPi.setSensor(new RawSensor(), 0);
-        brickPi.setSensor(new UltraSonicSensor(),1);
+        brickPi.setSensor(new RawSensor(), 3);
+        brickPi.setSensor(new UltraSonicSensor(), 0);
         brickPi.setSensor(new RawSensor(), 2);
-        brickPi.setSensor(new TouchSensor(), 3);
+        brickPi.setSensor(new TouchSensor(), 1);
         try {
             // configure the sensors
             brickPi.setupSensors();
@@ -48,7 +55,7 @@ public class BrickPiTests {
             Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        for (int counter = 0; counter < 100; counter++) {
+        for (int counter = 0; counter < 5; counter++) {
             System.out.println("Update Values");
             try {
                 // get the updated values.
@@ -68,38 +75,45 @@ public class BrickPiTests {
             Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        System.exit(0);
+        //System.exit(0);
         Motor motor = new Motor();
-        motor.setCommandedOutput(0);
-        motor.setEnabled(true);
-        motor.resetEncoder();
+//        motor.setCommandedOutput(0);
+//        motor.setEnabled(true);
+//        motor.resetEncoder();
         brickPi.setMotor(motor, 0);
-        motor.setCommandedOutput(25);
-        for (int counter = 0; counter < 50; counter++) {
-            try {
-                System.out.println("Forward Motors: Speed " + brickPi.getMotor(0).getCurrentSpeed() + " encoder " + brickPi.getMotor(0).getCurrentEncoderValue() + " Time " + System.currentTimeMillis() % 10000);
-                Thread.sleep(200);
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-        }
-        motor.setCommandedOutput(-25);
-        for (int counter = 0; counter < 50; counter++) {
-            try {
-                Thread.sleep(200);
-                System.out.println("Reverse Motors: Speed " + brickPi.getMotor(0).getCurrentSpeed() + " encoder " + brickPi.getMotor(0).getCurrentEncoderValue());
-            } catch (InterruptedException ex) {
-                // ignore
-            }
-        }
-        motor.setCommandedOutput(0);
-        motor.setEnabled(false);
+//        motor.setCommandedOutput(25);
+//        for (int counter = 0; counter < 50; counter++) {
+//            try {
+//                System.out.println("Forward Motors: Speed " + brickPi.getMotor(0).getCurrentSpeed() + " encoder " + brickPi.getMotor(0).getCurrentEncoderValue() + " Time " + System.currentTimeMillis() % 10000);
+//                Thread.sleep(200);
+//            } catch (InterruptedException ex) {
+//                // ignore
+//            }
+//        }
+//        motor.setCommandedOutput(-25);
+//        for (int counter = 0; counter < 50; counter++) {
+//            try {
+//                Thread.sleep(200);
+//                System.out.println("Reverse Motors: Speed " + brickPi.getMotor(0).getCurrentSpeed() + " encoder " + brickPi.getMotor(0).getCurrentEncoderValue());
+//            } catch (InterruptedException ex) {
+//                // ignore
+//            }
+//        }
+//        motor.setCommandedOutput(0);
+//        motor.setEnabled(false);
+//        try {
+//            // get the updated values.
+//            Thread.sleep(200); // wait for the values to be read....
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+        motor.rotate(1, 50);
+        // there's a problem here since the code will exit before the rotation is complete...
         try {
             // get the updated values.
-            Thread.sleep(200); // wait for the values to be read....
+            Thread.sleep(5000); // wait for the values to be read....
         } catch (InterruptedException ex) {
             Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 }

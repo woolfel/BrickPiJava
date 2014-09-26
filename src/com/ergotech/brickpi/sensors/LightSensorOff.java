@@ -8,10 +8,10 @@
  */
 package com.ergotech.brickpi.sensors;
 
-import com.ergotech.brickpi.BrickPi;
+import com.ergotech.brickpi.BrickPiCommunications;
 
 /**
- * Representation of a Touch Sensor.
+ * Representation of a Light Off Sensor.
  */
 public class LightSensorOff extends Sensor {
 
@@ -24,7 +24,7 @@ public class LightSensorOff extends Sensor {
 
     @Override
     public int decodeValues(byte[] message, int startLocation) {
-        value = BrickPi.decodeInt(10, message, startLocation);
+        value = BrickPiCommunications.decodeInt(10, message, startLocation);
         return startLocation + 10;
     }
 

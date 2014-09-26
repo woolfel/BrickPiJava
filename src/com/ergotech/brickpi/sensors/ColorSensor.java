@@ -1,11 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ *
+ * This file is made available online through a Creative Commons Attribution-ShareAlike 3.0  license.
+ * (http://creativecommons.org/licenses/by-sa/3.0/)
+ *
+ *  This is a library of functions for the RPi to communicate with the BrickPi.
  */
 package com.ergotech.brickpi.sensors;
 
-import com.ergotech.brickpi.BrickPi;
+import com.ergotech.brickpi.BrickPiCommunications;
 
 /**
  *
@@ -23,7 +25,7 @@ public class ColorSensor extends Sensor {
 
     @Override
     public int decodeValues(byte[] message, int startLocation) {
-        value = BrickPi.decodeInt(3, message, startLocation);
+        value = BrickPiCommunications.decodeInt(3, message, startLocation);
         return value;
     }
 }
