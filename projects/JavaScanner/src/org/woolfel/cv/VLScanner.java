@@ -36,7 +36,8 @@ public class VLScanner {
 	}
 	
 	public long scanImage(Mat imageMatrix) {
-		this.result = new ScannedColumn[imageMatrix.cols()/scanwidth];
+		double size = (double)imageMatrix.cols()/(double)scanwidth;
+		this.result = new ScannedColumn[(int)Math.ceil(size)];
 		rows = imageMatrix.rows();
 		long start = System.nanoTime();
 		int itr = 0;

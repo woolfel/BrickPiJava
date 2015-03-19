@@ -43,7 +43,8 @@ public class JavaScanner {
 	 * @return
 	 */
 	public long scanImage(BufferedImage imageMatrix) {
-		this.result = new ScannedColumn[imageMatrix.getWidth()/scanwidth];
+		double size = (double)imageMatrix.getWidth()/(double)scanwidth;
+		this.result = new ScannedColumn[(int)Math.ceil(size)];
 		rows = imageMatrix.getHeight();
 		long start = System.nanoTime();
 		int itr = 0;
