@@ -59,7 +59,7 @@ long LineScanner::scanImage(Mat imageMatrix) {
 		// the function passes the object back to make sure we have the updated reference
 		scol = scanColumn(scol, imageMatrix, i, rows);
 		this->result[itr] = scol;
-		this->result[itr].printString();
+		// this->result[itr].printString();
 		itr++;
 	}
 	gettimeofday(&endTime, NULL);
