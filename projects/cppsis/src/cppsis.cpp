@@ -6,6 +6,7 @@
 // Description : Simple image processing for racing robots
 //============================================================================
 
+#include <stdio.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
@@ -23,11 +24,22 @@ private:
 
 };
 
-int main() {
-	cout << "Lets get ready to rumble!!!" << endl;
-	Mat image = imread("./samples/image1-small.jpg");
-	cout << "image size: " << image.rows << " x " << image.cols << endl;
+int main(int argc, const char* argv[]) {
+
+	string inputfile = "./samples/image1-320.jpg";
+	int width = 10;
+	cout << "args - " << argc << endl;
+	if (argc > 1) {
+		inputfile = argv[1];
+	}
+	if (argc > 2) {
+		width = std::atoi(argv[2]);
+	}
+	cout << "reading: " << inputfile << endl;
+	Mat image = imread(inputfile);
+	cout << "image size: " << image.cols << " x " << image.rows << endl;
 	LineScanner scanner = LineScanner();
+	scanner.scanWidth = width;
 	int loop = 20;
 	double total = 0;
 	for (int i=0; i < loop; i++) {
