@@ -1,0 +1,21 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+group = 'com.ergotech'
+version = '1.0-SNAPSHOT'
+
+description = "BrickPi"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {        
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+    compile 'com.pi4j:pi4j-core:1.0'
+    testCompile 'junit:junit:4.12'
+}
