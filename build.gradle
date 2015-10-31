@@ -18,6 +18,12 @@ configurations {
     pi4j
 }
 
+eclipse {
+    classpath {
+        plusConfigurations += [ configurations.pi4j ]
+    }
+}
+
 sourceSets {
     main {
         compileClasspath += configurations.pi4j
