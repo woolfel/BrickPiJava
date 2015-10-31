@@ -70,7 +70,12 @@
     nbproject/build-impl.xml file. 
 
     -->
-    
+    <properties>
+        <src.dir>src/main/java</src.dir>
+    </properties>
+    <build>
+        <sourceDirectory>${src.dir}</sourceDirectory>
+    </build>
     <target name="-post-jar">
   <echo level="info" message="Copying dist directory to remote Pi"/>
   <exec executable="scp" dir="${basedir}">
