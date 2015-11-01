@@ -18,5 +18,30 @@ You can integrate Netbeans so that it will automatically copy the code to the PI
 
 https://blogs.oracle.com/speakjava/entry/integrating_netbeans_for_raspberry_pi
  
- 
+Gradle
+------
+
+The gradle build can generate IDE projects for Eclipse and IntelliJ and publish the BrickPiJava
+library to the local maven repository.  
+
+Building the jar
+--------
+
+To build the jar run
+
+    ./gradlew jar
+    
+The jar will be created in the build/libs directory.  Because a modified version of pi4j is used, those classes are included in the generated (fat) jar, and the pi4j library is NOT listed as a 
+dependency.
+
+To install to your local maven repository, run
+
+    ./gradlew install
+    
+Using Eclipse
+----------
+
+To generate the Eclipse project files, run
+
+    ./gradlew eclipse 
 
