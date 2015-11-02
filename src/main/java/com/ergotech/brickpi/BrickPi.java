@@ -12,13 +12,19 @@ import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.SerialPortException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides utility method for communication with the brick pi.
  */
 public class BrickPi extends BrickPiCommunications {
+
+    private static final Logger LOGGER = 
+            LoggerFactory.getLogger(BrickPi.class.getName());
+
+    public static final String DEFAULT_DEVICE = "/dev/ttyAMA0";
 
     /**
      * The singleton instance of this class.
@@ -45,10 +51,14 @@ public class BrickPi extends BrickPiCommunications {
                 brickPi = new BrickPi();
 
             } catch (IOException ex) {
-                Logger.getLogger(BrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage(), ex);
             }
         }
         return brickPi;
+    }
+    
+    public BrickPi() throws IOException {
+        this(DEFAULT_DEVICE, 500000);
     }
 
     /**
@@ -58,21 +68,19 @@ public class BrickPi extends BrickPiCommunications {
      * @throws java.io.IOException thrown if serial open throws a
      * SerialPortException
      */
-    protected BrickPi() throws IOException {
-        super();
+    public BrickPi(String device, int baudRate) throws IOException {
         try {
             serial = SerialFactory.createInstance();
             //System.out.println ("Port opening... "  + com.pi4j.wiringpi.Serial.serialOpen("/dev/ttyAMA0", 500000));
-            System.out.println("Opening Serial Port");
-            serial.open("/dev/ttyAMA0", 500000);
-            System.out.println("port opened");
+            System.out.println("Opening Serial Port " + device + ':' + baudRate);
+            serial.open(device, baudRate);
+            System.out.println("port open: " + serial.isOpen());
             // the listener thread in PI4J currently waits 100ms to see if data is available.
             // That's a little long for BrickPi applications.
         } catch (SerialPortException se) {
             // never let a runtime exception pass.  It can crash a whole application
             // since you won't necessarily see it until it fails...
-            System.out.println(se.getMessage());
-            se.printStackTrace();
+            LOGGER.error(se.getMessage(), se);
             throw new IOException("Failed to open communications to BrickPi");
         }
     }
@@ -120,11 +128,12 @@ public class BrickPi extends BrickPiCommunications {
 
         int delay = timeout / 5;  // we'll wait a maximum of timeout
         while (serial.availableBytes() < 2 && delay-- >= 0) { // we need at least the checksum and bytecount (2 bytes)
+            LOGGER.debug("Available: {}", serial.availableBytes());
             try {
                 Thread.sleep(5);  // 5ms
 
             } catch (InterruptedException ex) {
-                Logger.getLogger(BrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage(), ex);
             }
         }
 
@@ -132,7 +141,7 @@ public class BrickPi extends BrickPiCommunications {
             throw new IOException("Read timed out - Header");
         }
 
-        // the first byte of the recieved packet in the checksum.
+        // the first byte of the received packet in the checksum.
         // the second is the number of bytes in the packet.
         byte checksum = (byte) serial.read();
         byte packetSize = (byte) serial.read();  // the packet size does not include this two byte header.
@@ -146,7 +155,7 @@ public class BrickPi extends BrickPiCommunications {
                 Thread.sleep(5);  // 5ms
 
             } catch (InterruptedException ex) {
-                Logger.getLogger(BrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage(), ex);
             }
         }
 

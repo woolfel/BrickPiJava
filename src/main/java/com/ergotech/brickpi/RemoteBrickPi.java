@@ -12,8 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides utility method for communication remotely with the brick pi.
@@ -31,6 +32,8 @@ import java.util.logging.Logger;
  * 
  */
 public class RemoteBrickPi extends BrickPiCommunications {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RemoteBrickPi.class.getName());
 
     /**
      * The socket connection to the BrickPi.
@@ -207,7 +210,7 @@ public class RemoteBrickPi extends BrickPiCommunications {
                         Thread.sleep(5);  // 5ms
 
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(RemoteBrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                        LOGGER.error(ex.getMessage(), ex);
                     }
                 }
 
@@ -229,7 +232,7 @@ public class RemoteBrickPi extends BrickPiCommunications {
                         Thread.sleep(5);  // 5ms
 
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(RemoteBrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                        LOGGER.error(ex.getMessage(), ex);
                     }
                 }
 

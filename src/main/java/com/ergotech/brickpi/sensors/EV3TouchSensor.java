@@ -10,14 +10,15 @@ package com.ergotech.brickpi.sensors;
 
 /**
  * Representation of a Touch Sensor.
+ * @author sdaubin
  */
-public class TouchSensor extends Sensor {
+public class EV3TouchSensor extends Sensor {
 
     /**
      * Returns an instance of this sensor.
      */
-    public TouchSensor() {
-        super(SensorType.Touch);
+    public EV3TouchSensor() {
+        super(SensorType.EV3Touch);
     }
 
     /**
@@ -27,14 +28,14 @@ public class TouchSensor extends Sensor {
      * @return the last value read from the sensor.
      */
     public boolean isSet() {
-        return getValue() > 0;
+        return getValue() > 1020;
     }
     
      /**
      * Returns the 1 or 0 for consistency with the sensor interface.
      */
     public int getValue() {
-        return getValue() > 0 ? 1 : 0;
+        return super.getValue() > 1020 ? 1 : 0;
     }
 
 
