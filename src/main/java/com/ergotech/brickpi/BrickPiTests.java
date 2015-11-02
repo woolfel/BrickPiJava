@@ -14,14 +14,16 @@
  */
 package com.ergotech.brickpi;
 
-import com.ergotech.brickpi.motion.Motor;
-import com.ergotech.brickpi.sensors.RawSensor;
-import com.ergotech.brickpi.sensors.TouchSensor;
-import com.ergotech.brickpi.sensors.UltraSonicSensor;
-import com.ergotech.brickpi.sensors.UltraSonicSensorSS;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.ergotech.brickpi.motion.Motor;
+import com.ergotech.brickpi.motion.MotorPort;
+import com.ergotech.brickpi.sensors.Sensor;
+import com.ergotech.brickpi.sensors.SensorPort;
+import com.ergotech.brickpi.sensors.SensorType;
+import com.ergotech.brickpi.sensors.TouchSensor;
 
 /**
  *
@@ -43,11 +45,12 @@ public class BrickPiTests {
         } catch (InterruptedException ex) {
             Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
         }
-        // add touch sensors to all the ports.
-        brickPi.setSensor(new RawSensor(), 3);
-        brickPi.setSensor(new UltraSonicSensor(), 0);
-        brickPi.setSensor(new RawSensor(), 2);
-        brickPi.setSensor(new TouchSensor(), 1);
+        // add touch sensors to all the ports.        
+        brickPi.setSensor(new Sensor(SensorType.Ultrasonic), SensorPort.S1);
+        brickPi.setSensor(new TouchSensor(), SensorPort.S2);
+        brickPi.setSensor(new Sensor(SensorType.Raw), SensorPort.S3);
+        brickPi.setSensor(new Sensor(SensorType.Raw), SensorPort.S4);
+        
         try {
             // configure the sensors
             brickPi.setupSensors();
@@ -64,10 +67,10 @@ public class BrickPiTests {
                 Logger.getLogger(BrickPiTests.class.getName()).log(Level.SEVERE, null, ex);
             }
             // here're the values
-            System.out.println("Sensors: " + brickPi.getSensor(0).getValue() + " " + brickPi.getSensor(1).getValue() + " " + brickPi.getSensor(2).getValue() + " " + brickPi.getSensor(3).getValue());
+            System.out.println("Sensors: " + brickPi.getSensor(SensorPort.S1).getValue() + " " + brickPi.getSensor(SensorPort.S2).getValue() + " " + brickPi.getSensor(SensorPort.S3).getValue() + " " + brickPi.getSensor(SensorPort.S4).getValue());
         }
 
-        brickPi.setSensor(new UltraSonicSensorSS(), 1);
+        brickPi.setSensor(new Sensor(SensorType.UltrasonicSS), SensorPort.S2);
         try {
             // configure the sensors
             brickPi.setupSensors();
@@ -80,7 +83,7 @@ public class BrickPiTests {
 //        motor.setCommandedOutput(0);
 //        motor.setEnabled(true);
 //        motor.resetEncoder();
-        brickPi.setMotor(motor, 0);
+        brickPi.setMotor(motor, MotorPort.MA);
 //        motor.setCommandedOutput(25);
 //        for (int counter = 0; counter < 50; counter++) {
 //            try {

@@ -56,6 +56,10 @@ public class BrickPi extends BrickPiCommunications {
         }
         return brickPi;
     }
+    
+    public BrickPi() throws IOException {
+        this(DEFAULT_DEVICE, 500000);
+    }
 
     /**
      * Create the brick pi instance. This will only occur on the "getBrickPi"
@@ -64,14 +68,13 @@ public class BrickPi extends BrickPiCommunications {
      * @throws java.io.IOException thrown if serial open throws a
      * SerialPortException
      */
-    protected BrickPi() throws IOException {
-        super();
+    public BrickPi(String device, int baudRate) throws IOException {
         try {
             serial = SerialFactory.createInstance();
             //System.out.println ("Port opening... "  + com.pi4j.wiringpi.Serial.serialOpen("/dev/ttyAMA0", 500000));
-            System.out.println("Opening Serial Port");
-            serial.open("/dev/ttyAMA0", 500000);
-            System.out.println("port opened");
+            System.out.println("Opening Serial Port " + device + ':' + baudRate);
+            serial.open(device, baudRate);
+            System.out.println("port open: " + serial.isOpen());
             // the listener thread in PI4J currently waits 100ms to see if data is available.
             // That's a little long for BrickPi applications.
         } catch (SerialPortException se) {
@@ -125,6 +128,7 @@ public class BrickPi extends BrickPiCommunications {
 
         int delay = timeout / 5;  // we'll wait a maximum of timeout
         while (serial.availableBytes() < 2 && delay-- >= 0) { // we need at least the checksum and bytecount (2 bytes)
+            LOGGER.debug("Available: {}", serial.availableBytes());
             try {
                 Thread.sleep(5);  // 5ms
 
@@ -137,7 +141,7 @@ public class BrickPi extends BrickPiCommunications {
             throw new IOException("Read timed out - Header");
         }
 
-        // the first byte of the recieved packet in the checksum.
+        // the first byte of the received packet in the checksum.
         // the second is the number of bytes in the packet.
         byte checksum = (byte) serial.read();
         byte packetSize = (byte) serial.read();  // the packet size does not include this two byte header.
