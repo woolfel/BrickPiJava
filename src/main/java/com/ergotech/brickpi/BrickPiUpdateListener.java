@@ -18,6 +18,6 @@ public interface BrickPiUpdateListener {
      * @param <T> a BrickPi or remote BrickPi instance.
      * @param source the source of this event.
      */
-    public <T extends BrickPiCommunications> void updateReceived (T source);
+    <T extends BrickPiCommunications> void updateReceived (T source);
     
 }

@@ -12,13 +12,19 @@ import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.SerialPortException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides utility method for communication with the brick pi.
  */
 public class BrickPi extends BrickPiCommunications {
+
+    private static final Logger LOGGER = 
+            LoggerFactory.getLogger(BrickPi.class.getName());
+
+    public static final String DEFAULT_DEVICE = "/dev/ttyAMA0";
 
     /**
      * The singleton instance of this class.
@@ -45,7 +51,7 @@ public class BrickPi extends BrickPiCommunications {
                 brickPi = new BrickPi();
 
             } catch (IOException ex) {
-                Logger.getLogger(BrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage(), ex);
             }
         }
         return brickPi;
@@ -71,8 +77,7 @@ public class BrickPi extends BrickPiCommunications {
         } catch (SerialPortException se) {
             // never let a runtime exception pass.  It can crash a whole application
             // since you won't necessarily see it until it fails...
-            System.out.println(se.getMessage());
-            se.printStackTrace();
+            LOGGER.error(se.getMessage(), se);
             throw new IOException("Failed to open communications to BrickPi");
         }
     }
@@ -124,7 +129,7 @@ public class BrickPi extends BrickPiCommunications {
                 Thread.sleep(5);  // 5ms
 
             } catch (InterruptedException ex) {
-                Logger.getLogger(BrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage(), ex);
             }
         }
 
@@ -146,7 +151,7 @@ public class BrickPi extends BrickPiCommunications {
                 Thread.sleep(5);  // 5ms
 
             } catch (InterruptedException ex) {
-                Logger.getLogger(BrickPi.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.error(ex.getMessage(), ex);
             }
         }
 
