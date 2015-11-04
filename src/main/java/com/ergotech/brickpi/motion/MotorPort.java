@@ -10,7 +10,7 @@ public enum MotorPort {
     MA(0),
     MB(1),
     MC(2),
-    MD(4);
+    MD(3);
 
     private final int port;
     
