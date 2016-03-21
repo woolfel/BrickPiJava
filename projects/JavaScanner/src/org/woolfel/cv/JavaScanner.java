@@ -2,14 +2,22 @@ package org.woolfel.cv;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Note: setting blackThreshold, scanwidth and minHeight are not
+ * thread safe, since they are static. For a robot, this should
+ * only be called by one thread.
+ * Doesn't make sense to use multi-threading for a raspberry pi
+ * robot right now. 
+ * 
+ * @author Peter Lin
+ *
+ */
 public class JavaScanner {
 	
 	public static double blackThreshold = 60;
 	public static int scanwidth = 10;
-	public static int minHeight = 5;
+	public static int minHeight = 8;
 	private ScannedColumn[] result = null;
 	private int rows = 480;
 	
@@ -25,6 +33,14 @@ public class JavaScanner {
 		JavaScanner.blackThreshold = blackThreshold;
 	}
 
+	public static void setMinHeight(int height) {
+		minHeight = height;
+	}
+	
+	public static int getMinHeight() {
+		return minHeight;
+	}
+	
 	public static int getScanwidth() {
 		return scanwidth;
 	}
@@ -56,10 +72,16 @@ public class JavaScanner {
 			itr++;
 		}
 		long et = System.nanoTime() - start;
-		// System.out.println("et=" + ((double)et/1000000.0) + " ms");
 		return et;
 	}
 	
+	/**
+	 * 
+	 * @param col
+	 * @param image
+	 * @param columnNumber
+	 * @param rows
+	 */
 	private static void scanColumnByColor(ScannedColumn col, BufferedImage image, int columnNumber, int rows) {
 		int counter = 0;
 		for (int i=0; i < rows; i++) {

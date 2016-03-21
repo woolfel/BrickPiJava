@@ -29,6 +29,10 @@ public class ScannedColumn {
 		centerPoint = newcp;
 	}
 	
+	public int count() {
+		return results.length;
+	}
+	
 	public void setColumnIndex(int in) {
 		this.columnIndex = in;
 	}
