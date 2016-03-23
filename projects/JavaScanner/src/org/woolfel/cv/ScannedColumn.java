@@ -57,6 +57,15 @@ public class ScannedColumn {
 		}
 	}
 	
+	public ScannedColumn clone() {
+		ScannedColumn clone = new ScannedColumn();
+		clone.results = new int[results.length];
+		clone.centerPoint = new int[centerPoint.length];
+		System.arraycopy(results, 0, clone.results, 0, results.length);
+		System.arraycopy(centerPoint, 0, clone.centerPoint, 0, centerPoint.length);
+		return clone;
+	}
+	
 	/**
 	 * Returns an array: height, center
 	 * @param index

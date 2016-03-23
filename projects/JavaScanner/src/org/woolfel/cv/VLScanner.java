@@ -8,6 +8,7 @@ public class VLScanner {
 	
 	public static double blackThreshold = 60;
 	public static int scanwidth = 10;
+	public static int minHeight = 8;
 	private ScannedColumn[] result = null;
 	private int rows = 480;
 	
@@ -23,6 +24,14 @@ public class VLScanner {
 		VLScanner.blackThreshold = blackThreshold;
 	}
 
+	public static void setMinHeight(int height) {
+		minHeight = height;
+	}
+	
+	public static int getMinHeight() {
+		return minHeight;
+	}
+	
 	public static int getScanwidth() {
 		return scanwidth;
 	}
@@ -62,7 +71,7 @@ public class VLScanner {
 			if (bgr[0] < blackThreshold && bgr[1] < blackThreshold && bgr[2] < blackThreshold) {
 				counter++;
 			} else {
-				if (counter > 5) {
+				if (counter > minHeight) {
 					col.addHeight(counter, (i + counter/2));
 				}
 				counter = 0;

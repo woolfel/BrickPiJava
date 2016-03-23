@@ -12,7 +12,7 @@ package org.woolfel.cv;
  * @author Peter Lin
  *
  */
-public class NoiseFilter {
+public class NoiseFilter implements DataFilter {
 
 	private int minLineHeight = 10;
 	private int maxLineHeight = 100;
@@ -36,14 +36,16 @@ public class NoiseFilter {
 		this.maxLineHeight = maxLineHeight;
 	}
 
-	public void filter(ScannedColumn[] input) {
+	public ScannedColumn[] filter(ScannedColumn[] input) {
 		ScannedColumn prev = null;
 		ScannedColumn next = null;
 		ScannedColumn current = null;
+		ScannedColumn[] filtered = new ScannedColumn[input.length];
 		int lineCenter = 0;
 		for (int i=0; i < input.length; i++) {
+			filtered[i] = input[i].clone();
 			if (i > 0) {
-				prev = input[i - 1];
+				prev = filtered[i - 1];
 			}
 			current = input[i];
 			if (i < input.length - 1) {
@@ -65,9 +67,23 @@ public class NoiseFilter {
 				
 			}
 		}
+		return filtered;
 	}
 	
+	/**
+	 * the algorithm for guessing the center is simple. Return the center
+	 * of the first line that is between 60 and 100 pixels high.
+	 * @param column
+	 * @return
+	 */
 	public int guessCenter(ScannedColumn column) {
-		return 0;
+		int center = 0;
+		for (int i=0; i < column.count(); i++) {
+			if (column.getHeight(i) < 100 && column.getHeight(i) > 60) {
+				center = column.getCenter(i);
+				break;
+			}
+		}
+		return center;
 	}
 }
