@@ -19,6 +19,6 @@ fi
 
 echo $CLASSPATH
 
-echo $JAVA -classpath $CLASSPATH -Djava.library.path=. org.woolfel.cv.ScanTest $@
-$JAVA -server -classpath $CLASSPATH -Djava.library.path=. org.woolfel.cv.ScanTest $@
+echo $JAVA -classpath $CLASSPATH -Djava.library.path=. org.woolfel.cv.OCVScanTest $@
+$JAVA -server -classpath $CLASSPATH -Djava.library.path=. org.woolfel.cv.OCVScanTest $@
 
