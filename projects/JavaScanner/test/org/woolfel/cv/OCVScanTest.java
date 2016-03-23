@@ -3,9 +3,9 @@ package org.woolfel.cv;
 import org.opencv.core.*;
 import org.opencv.highgui.*;
 
-public class ScanTest {
+public class OCVScanTest {
 
-	public ScanTest() {
+	public OCVScanTest() {
 	}
 
 	public static void main(String[] args) {
@@ -19,8 +19,8 @@ public class ScanTest {
 		}
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		Mat imagematrix = Highgui.imread(file);
-		VLScanner scanner = new VLScanner();
-		VLScanner.setScanwidth(scanwidth);
+		OCVScanner scanner = new OCVScanner();
+		OCVScanner.setScanwidth(scanwidth);
 		int loop = 30;
 		int ignore = 5;
 		double total = 0;

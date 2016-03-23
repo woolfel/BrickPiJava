@@ -6,6 +6,16 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+/**
+ * AWTTest uses pure Java to do the line scanning and doesn't use
+ * OpenCV. It uses BufferedImage and samples the image with the
+ * given interval.
+ * 
+ * Note: BufferedImage 0,0 is the upper left corner.
+ * 
+ * @author Peter Lin
+ *
+ */
 public class AWTTest {
 
 	public AWTTest() {

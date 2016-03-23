@@ -1,10 +1,20 @@
 package org.woolfel.cv;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.opencv.core.*;
 
-public class VLScanner {
+/**
+ * <p>
+ * OCVScanner uses OpenCV to read the image data. It passes Mat object
+ * to scanImage method. Calling C++ code from Java has always had an
+ * overhead with JNI. Regardless of the Java code, making native calls
+ * can have a 20% overhead.</p>
+ * <p>
+ * This class demonstrates how to use OpenCV Mat object. To run this,
+ * you will need to have OpenCV binaries on Linux and openCV DLL
+ * on windows.
+ * </p>
+ */
+public class OCVScanner {
 	
 	public static double blackThreshold = 60;
 	public static int scanwidth = 10;
@@ -12,7 +22,7 @@ public class VLScanner {
 	private ScannedColumn[] result = null;
 	private int rows = 480;
 	
-	public VLScanner() {
+	public OCVScanner() {
 		super();
 	}
 	
@@ -21,7 +31,7 @@ public class VLScanner {
 	}
 
 	public static void setBlackThreshold(double blackThreshold) {
-		VLScanner.blackThreshold = blackThreshold;
+		OCVScanner.blackThreshold = blackThreshold;
 	}
 
 	public static void setMinHeight(int height) {
@@ -37,7 +47,7 @@ public class VLScanner {
 	}
 
 	public static void setScanwidth(int scanwidth) {
-		VLScanner.scanwidth = scanwidth;
+		OCVScanner.scanwidth = scanwidth;
 	}
 
 	public ScannedColumn[] getResults() {
@@ -59,7 +69,6 @@ public class VLScanner {
 		}
 		long end = System.nanoTime();
 		long et = end - start;
-		// System.out.println("et=" + ((double)et/1000000.0) + " ms");
 		return et;
 	}
 	
