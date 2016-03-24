@@ -8,21 +8,34 @@
  */
 package com.ergotech.brickpi;
 
-import com.ergotech.brickpi.motion.Motor;
-import com.ergotech.brickpi.sensors.RawSensor;
-import com.ergotech.brickpi.sensors.Sensor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.ergotech.brickpi.motion.Motor;
+import com.ergotech.brickpi.motion.MotorPort;
+import com.ergotech.brickpi.sensors.Sensor;
+import com.ergotech.brickpi.sensors.SensorPort;
+import com.ergotech.brickpi.sensors.SensorType;
 
 /**
  * This class provides utility method for communication with the brick pi.
  */
 public abstract class BrickPiCommunications {
+
+    private static final Logger LOGGER = 
+            LoggerFactory.getLogger(BrickPiCommunications.class.getName());
 
     /**
      * The current debug level.
@@ -58,8 +71,8 @@ public abstract class BrickPiCommunications {
      */
     public static final byte MSG_TYPE_TIMEOUT_SETTINGS = 5;
 
-    /** A list of event listeners .*/
-    public List<BrickPiUpdateListener> listeners;
+    /** A thread safe list of event listeners .*/
+    public final List<BrickPiUpdateListener> listeners;
 
     /**
      * The addresses of the 2 brick pi atmel chips. At this point in development
@@ -67,23 +80,34 @@ public abstract class BrickPiCommunications {
      * all. If I find a reason, I'll expose them (maybe a future brick pi design
      * will need it).
      */
-    protected byte[] serialAddresses;
+    protected final byte[] serialAddresses;
 
     /**
      * The array of sensors.
      */
-    protected Sensor[] sensorType;
+    protected final Sensor[] sensorType;
 
     /**
      * The array of motors.
      */
-    protected Motor[] motors;
+    protected final Motor[] motors;
 
     /**
-     * The thread that calls "updateValues" frequently. This thread is started
-     * on "setupSensors".
+     * The executor that calls "updateValues" frequently. Tasks are scheduled
+     * on this executor in "setupSensors".
      */
-    protected Thread updateValuesThread;
+    protected final ScheduledExecutorService updateValuesExecutor = 
+            Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "Update values thread");
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
+
+    private volatile ScheduledFuture<?> scheduledPoller;
 
     /**
      * How frequently to call updateValues. This is in milliseconds. A value of
@@ -101,14 +125,13 @@ public abstract class BrickPiCommunications {
      *
      */
     protected BrickPiCommunications() {
-        updateDelay = 0;
         serialAddresses = new byte[SERIAL_TARGETS];
         serialAddresses[0] = 1;  // problem if SERIAL_TARGETS is not 2
         serialAddresses[1] = 2;
         sensorType = new Sensor[SERIAL_TARGETS * 2];
         motors = new Motor[SERIAL_TARGETS * 2];
         updateDelay = 100;
-        listeners = new ArrayList<BrickPiUpdateListener>();
+        listeners = Collections.synchronizedList(new ArrayList<BrickPiUpdateListener>());
     }
 
     /**
@@ -137,12 +160,13 @@ public abstract class BrickPiCommunications {
      * @throws java.io.IOException thrown if the message transaction fails.
      */
     public void setTimeout(long timeout) throws IOException {
-        byte[] packet = new byte[5];
-        packet[0] = MSG_TYPE_TIMEOUT_SETTINGS;
-        packet[1] = (byte) (timeout & 0xFF);
-        packet[2] = (byte) ((timeout >> 8) & 0xFF);
-        packet[3] = (byte) ((timeout >> 16) & 0xFF);
-        packet[4] = (byte) ((timeout >> 24) & 0xFF);
+        byte[] packet = new byte[] {
+                MSG_TYPE_TIMEOUT_SETTINGS,
+                (byte) (timeout & 0xFF),
+                (byte) ((timeout >> 8) & 0xFF),
+                (byte) ((timeout >> 16) & 0xFF),
+                (byte) ((timeout >> 24) & 0xFF)
+        };
         for (int counter = 0; counter < SERIAL_TARGETS; counter++) {
             serialTransactionWithRetry(counter, packet, 100);
         }
@@ -160,6 +184,9 @@ public abstract class BrickPiCommunications {
      */
     public void setUpdateDelay(int updateDelay) {
         this.updateDelay = updateDelay;
+        if (updateDelay == 0 && null != scheduledPoller) {
+            scheduledPoller.cancel(false);
+        }
     }
 
     /**
@@ -168,11 +195,10 @@ public abstract class BrickPiCommunications {
      *
      * @param sensor the sensor to associate with the port. May be null to clear
      * the sensor configuration.
-     * @param port the port. This, currently, should be 0-3. Values outside that
-     * range will throw an IndexOutOfBoundsException.
+     * @param port the port.
      */
-    public void setSensor(Sensor sensor, int port) {
-        sensorType[port] = sensor;
+    public void setSensor(Sensor sensor, SensorPort port) {
+        sensorType[port.getPort()] = sensor;
     }
 
     /**
@@ -185,22 +211,25 @@ public abstract class BrickPiCommunications {
      * @return a valid Sensor object. If no sensor is current associated with
      * the port a RawSensor will be returned.
      */
-    public <T extends Sensor> T getSensor(int port) {
+    @SuppressWarnings("unchecked")
+    public <T extends Sensor> T getSensor(SensorPort sensorPort) {
+        int port = sensorPort.getPort();
         if (sensorType[port] == null) {
-            sensorType[port] = new RawSensor();
+            LOGGER.debug("Uninitialized sensor: {}", port);
+            sensorType[port] = new Sensor(SensorType.Raw);
         }
         return (T) sensorType[port];
     }
 
     /**
-     * Set the motor at the particular port. There are current four motor ports.
+     * Set the motor at the particular port. There are currently four motor ports.
      *
      * @param motor the motor to associate with the port. May be null to clear
      * the motor configuration.
-     * @param port the port. This, currently, should be 0-3. Values outside that
-     * range will throw an IndexOutOfBoundsException.
+     * @param port the port. 
      */
-    public void setMotor(Motor motor, int port) {
+    public void setMotor(Motor motor, MotorPort motorPort) {
+        int port = motorPort.getPort();
         if (motors[port] != null) {
             // remove the association of this motor to the controller
             motors[port].setBrickPi(null);
@@ -219,8 +248,8 @@ public abstract class BrickPiCommunications {
      * @param port the port associated with the requested motor.
      * @return a valid motor object or null
      */
-    public Motor getMotor(int port) {
-        return motors[port];
+    public Motor getMotor(MotorPort port) {
+        return motors[port.getPort()];
     }
 
     /**
@@ -229,7 +258,11 @@ public abstract class BrickPiCommunications {
      * @throws java.io.IOException thrown if no response is received from the
      * BrickPi
      */
-    public void setupSensors() throws IOException {
+    public boolean setupSensors() throws IOException {
+        if (null != scheduledPoller) {
+            scheduledPoller.cancel(false);
+        }
+        
         for (int counter = 0; counter < SERIAL_TARGETS; counter++) {
             int startingBitLocation = 0;
             byte[] packet;
@@ -260,43 +293,29 @@ public abstract class BrickPiCommunications {
             // should probably check the response here...
         }
         // set up the polling thread
-        if (updateDelay > 0 && updateValuesThread == null) {
+        if (updateDelay > 0) {
             Runnable update = new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        while (updateDelay > 0) {
-                            try {
-                                updateValues();
-                                // notify listeners.
-                                for ( BrickPiUpdateListener listener : listeners ) {
-                                    listener.updateReceived(BrickPiCommunications.this);
-                                }
-                                synchronized (BrickPiCommunications.this) {
-                                    BrickPiCommunications.this.wait(updateDelay);
-                                }
-                            } catch (ThreadDeath td) {
-                                throw td;  // don't know whether this is still required by Java - used to be.
-                            } catch (Throwable any) {
-                                Logger.getLogger(BrickPiCommunications.class.getName()).log(Level.SEVERE, null, any);
-                            }
-                        }  // end of while
-                    } finally {
-                        updateValuesThread = null;  // reset this so that the thread can be restarted in the future.
+                        final BrickPiUpdateListener[] listenerArray = listeners.toArray(new BrickPiUpdateListener[0]);
+                        updateValues();
+                        // notify listeners.
+                        for ( BrickPiUpdateListener listener : listenerArray ) {
+                            listener.updateReceived(BrickPiCommunications.this);
+                        }
+                    } catch (Exception any) {
+                        LOGGER.error(any.getMessage(), any);
                     }
                 }
 
             };
-            updateValuesThread = new Thread(update, "Update Values Thread");
-            // not sure about this.  If it's daemon then when the application exits
-            // this thread will also exit.
-            // If it's not deamon, then it can be used to keep the application running
-            // which means that no other thread needs to do this.
-            updateValuesThread.setDaemon(true);
-            updateValuesThread.start();
+            scheduledPoller = updateValuesExecutor.scheduleAtFixedRate(update, updateDelay, updateDelay, TimeUnit.MILLISECONDS);
+            return true;
         }
 
+        return false;
     }
 
     /**
@@ -305,7 +324,7 @@ public abstract class BrickPiCommunications {
     public void updateValues() throws IOException {
         for (int counter = 0; counter < SERIAL_TARGETS; counter++) {
             int startingBitLocation = 0;
-            byte[] packet;
+            
             // we're going to use a BitSet to pack the bits.
             BitSet pollingData = new BitSet();
             // encoder offsets are not supported.  This code will need to be changed
@@ -339,7 +358,7 @@ public abstract class BrickPiCommunications {
                 pollingBytes = Arrays.copyOf(pollingBytes, startingBitLocation / 8 + 1);
             }
             // create a packet of the correct size and fill in the header data.
-            packet = new byte[pollingBytes.length + 1];
+            byte[] packet = new byte[pollingBytes.length + 1];
             System.arraycopy(pollingBytes, 0, packet, 1, pollingBytes.length);
             packet[0] = MSG_TYPE_VALUES;
             byte[] values = serialTransactionWithRetry(counter, packet, 50);
@@ -363,13 +382,13 @@ public abstract class BrickPiCommunications {
                 startingBitLocation += 5;  // skip encoder lengths
                 int encoderWordLength1 = decodeInt(bitLength, values, startingBitLocation);
                 startingBitLocation += 5;  // skip encoder lengths
-                Motor motor = getMotor(counter * 2);
+                Motor motor = motors[counter * 2];
                 if (motor != null) {
                     motor.decodeValues(encoderWordLength0, values, startingBitLocation);
                 }
                 //int encoderVal0 = decodeInt(encoderWordLength0, incoming, startingBitLocation);
                 startingBitLocation += encoderWordLength0;
-                motor = getMotor(counter * 2 + 1);
+                motor = motors[counter * 2 + 1];
                 if (motor != null) {
                     motor.decodeValues(encoderWordLength1, values, startingBitLocation);
                 }
@@ -386,7 +405,7 @@ public abstract class BrickPiCommunications {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
         }
@@ -431,7 +450,7 @@ public abstract class BrickPiCommunications {
         // it's inexcusable to have to add retry-hacks.
         // the "for" loop will exit on success and return
         // and if that doesn't happen then the method will throw.
-        IOException lastioe = new IOException("Unknown");  // value should never be used.
+        IOException lastioe = null;
         for (int retry = 0; retry < 5; retry++) {
             try {
                 sendToBrickPi(serialAddresses[addressPointer], packet);

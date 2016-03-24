@@ -8,34 +8,16 @@
  */
 package com.ergotech.brickpi.sensors;
 
-import com.ergotech.brickpi.BrickPiCommunications;
-
 /**
  * Representation of a Touch Sensor.
  */
 public class TouchSensor extends Sensor {
 
     /**
-     * The current value of the sensor.
-     */
-    protected boolean set;
-
-    /**
      * Returns an instance of this sensor.
      */
     public TouchSensor() {
-
-    }
-
-    @Override
-    public int decodeValues(byte[] message, int startLocation) {
-        set = (BrickPiCommunications.decodeInt(1, message, startLocation++) != 0);
-        return startLocation;
-    }
-
-    @Override
-    public byte getSensorType() {
-        return TYPE_SENSOR_TOUCH;
+        super(SensorType.Touch);
     }
 
     /**
@@ -45,14 +27,14 @@ public class TouchSensor extends Sensor {
      * @return the last value read from the sensor.
      */
     public boolean isSet() {
-        return set;
+        return getValue() > 0;
     }
     
      /**
      * Returns the 1 or 0 for consistency with the sensor interface.
      */
     public int getValue() {
-        return set ? 1 : 0;
+        return getValue() > 0 ? 1 : 0;
     }
 
 
