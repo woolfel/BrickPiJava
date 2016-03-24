@@ -5,7 +5,7 @@ If you want to use OpenCV with Java to process video and images from the Raspber
 
 Installation
 ------
-These instructions have been tested with Noob 1.8.0 and Raspberry Pi 1 B+ and Pi 2 B. There's the easy path using prebuilt binaries or build it from source. Before you try building from source, try the easy path first. Building from source can lead you down a rabbit hole hunting for dependencies.
+These instructions have been tested with Noob 1.8.0, Noob 1.9.0, Raspberry Pi 1 B+ and Pi 2 B. There's the easy path using prebuilt binaries or build it from source. Before you try building from source, try the easy path first. Building from source can lead you down a rabbit hole hunting for dependencies.
 
 <b>Easy Path</b>
 ------
