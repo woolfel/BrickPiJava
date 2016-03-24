@@ -1,10 +1,25 @@
-Java Open Computer Vision
+Open Computer Vision
 ======
 
-This project uses OpenCV with Java to process video and images from the Raspberry Pi camera. You can do things like face recognition, object detection and motion tracking. OpenCV was originally created for Stanley autonomous vehicle. Stanford won the grand challenge by completing the course in the shortest time. If you don't know what the grand challenge is, go to wikipedia.
+If you want to use OpenCV with Java to process video and images from the Raspberry Pi camera, you will need to install OpenCV. Open Computer Vision is a set of libraries for processing images to extract features. It was originally created by Intel for Stanford's Stanley autonomous vehicle which won the grand challenge by completing the course in the shortest time. If you don't know what the grand challenge is, go to wikipedia.
 
 Installation
 ------
+These instructions have been tested with Noob 1.8.0 and Raspberry Pi 1 B+ and Pi 2 B. There's the easy path using prebuilt binaries or build it from source. Before you try building from source, try the easy path first. Building from source can lead you down a rabbit hole hunting for dependencies.
+
+<b>Easy Path</b>
+------
+In a terminal window run ./setup.sh
+
+This will install all opencv related binaries from the public repositories. If the test doesn't work, you will need to build from source. Clone the BrickPi_Python from Github https://github.com/DexterInd/BrickPi_Python . In the Project_Examples/openCV folder is a few sample scripts. To verify it works, run
+
+sudo python opencv_example.py
+
+If it doesn't run, it means opencv isn't installed correctly.
+
+<b>Build From Source</b>
+------
+
 Follow these instructions to install OpenCV.
 ![OpenCV source code](http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/ "")
 
