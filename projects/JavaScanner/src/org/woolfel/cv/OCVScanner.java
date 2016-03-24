@@ -81,7 +81,7 @@ public class OCVScanner {
 				counter++;
 			} else {
 				if (counter > minHeight) {
-					col.addHeight(counter, (i + counter/2));
+					col.addHeight(counter, (i - counter/2));
 				}
 				counter = 0;
 			}

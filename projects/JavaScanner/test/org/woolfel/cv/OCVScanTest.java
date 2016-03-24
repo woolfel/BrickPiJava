@@ -3,12 +3,19 @@ package org.woolfel.cv;
 import org.opencv.core.*;
 import org.opencv.highgui.*;
 
+/**
+ * Important note about the test, it loops 30 times and ignores the first 5.
+ * 
+ * @author Peter Lin
+ *
+ */
 public class OCVScanTest {
 
 	public OCVScanTest() {
 	}
 
 	public static void main(String[] args) {
+		System.out.println("OCVScanTest -----");
 		String file = "./samples/image1-small.jpg";
 		int scanwidth = 10;
 		if (args != null && args.length > 0) {

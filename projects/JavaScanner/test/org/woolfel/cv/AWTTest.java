@@ -23,6 +23,7 @@ public class AWTTest {
 
 	public static void main(String[] args) {
 		try {
+			System.out.println("AWTTest -----");
 			String file = "./samples/image1-small.jpg";
 			int scanwidth = 10;
 			if (args != null && args.length > 0) {
