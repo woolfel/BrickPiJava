@@ -1,6 +1,5 @@
 #!/bin/sh
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/
 
 HOME_PATH=.
 echo $HOME_PATH
@@ -19,6 +18,6 @@ fi
 
 echo $CLASSPATH
 
-echo $JAVA -classpath $CLASSPATH -Djava.library.path=. org.woolfel.cv.OCVScanTest $@
-$JAVA -server -classpath $CLASSPATH -Djava.library.path=. org.woolfel.cv.OCVScanTest $@
+echo $JAVA -classpath $CLASSPATH -Djava.library.path=$LD_LIBRARY_PATH org.woolfel.cv.OCVScanTest $@
+$JAVA -server -classpath $CLASSPATH -Djava.library.path=$LD_LIBRARY_PATH org.woolfel.cv.OCVScanTest $@
 
