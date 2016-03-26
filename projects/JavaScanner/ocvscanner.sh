@@ -11,6 +11,9 @@ do
   CLASSPATH=${CLASSPATH}:${i}
 done
 
+# add the opencv jar
+CLASSPATH=$CLASSPATH:/usr/share/java/opencv-249.jar
+
 if [ -n "$JAVA_HOME" ]; then
     JAVA="$JAVA_HOME/java"
 else
