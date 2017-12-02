@@ -35,7 +35,7 @@ public class AWTTest {
 			BufferedImage image = ImageIO.read(new java.io.File(file));
 			JavaScanner scanner = new JavaScanner();
 			JavaScanner.setScanwidth(scanwidth);
-			JavaScanner.minHeight = 6;
+			JavaScanner.minHeight = 8;
 			JavaScanner.startRow = 20;
 			JavaScanner.endRow = 220;
 			int loop = 10 * scanwidth;
