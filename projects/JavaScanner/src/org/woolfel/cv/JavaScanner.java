@@ -17,7 +17,7 @@ public class JavaScanner {
 	
 	public static double blackThreshold = 60;
 	public static int scanwidth = 10;
-	public static int minHeight = 8;
+	public static int minHeight = 5;
 	private ScannedColumn[] result = null;
 	private int rows = 480;
 	public static int startRow = 0;

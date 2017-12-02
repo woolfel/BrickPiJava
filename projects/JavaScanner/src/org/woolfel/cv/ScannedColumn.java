@@ -83,7 +83,7 @@ public class ScannedColumn {
 	}
 	
 	public String toString() {
-		return columnIndex + ":"+ arrayString(this.results) + " - " + arrayString(centerPoint);
+		return columnIndex + ":"+ arrayString(this.results) + " - center: " + arrayString(centerPoint);
 	}
 	
 	private String arrayString(int[] array) {
