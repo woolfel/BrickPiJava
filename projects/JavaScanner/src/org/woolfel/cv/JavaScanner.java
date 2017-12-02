@@ -20,6 +20,8 @@ public class JavaScanner {
 	public static int minHeight = 8;
 	private ScannedColumn[] result = null;
 	private int rows = 480;
+	public static int startRow = 0;
+	public static int endRow = 800;
 	
 	public JavaScanner() {
 		super();
@@ -84,7 +86,7 @@ public class JavaScanner {
 	 */
 	private static void scanColumnByColor(ScannedColumn col, BufferedImage image, int columnNumber, int rows) {
 		int counter = 0;
-		for (int i=0; i < rows; i++) {
+		for (int i=startRow; i < endRow; i++) {
 			Color bgr = new Color(image.getRGB(columnNumber,i));
 			if (bgr.getRed() < blackThreshold && bgr.getBlue() < blackThreshold && bgr.getGreen() < blackThreshold) {
 				counter++;

@@ -24,8 +24,8 @@ public class AWTTest {
 	public static void main(String[] args) {
 		try {
 			System.out.println("AWTTest -----");
-			String file = "./samples/image1-small.jpg";
-			int scanwidth = 10;
+			String file = "./samples/image1-320.jpg";
+			int scanwidth = 5;
 			if (args != null && args.length > 0) {
 				file = args[0];
 			}
@@ -35,6 +35,8 @@ public class AWTTest {
 			BufferedImage image = ImageIO.read(new java.io.File(file));
 			JavaScanner scanner = new JavaScanner();
 			JavaScanner.setScanwidth(scanwidth);
+			JavaScanner.startRow = 20;
+			JavaScanner.endRow = 220;
 			int loop = 10 * scanwidth;
 			int ignore = 5;
 			double total = 0;
