@@ -3,6 +3,8 @@ package org.woolfel.cv;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scan and render will detect the line and draw a line through
@@ -18,6 +20,8 @@ public class ScanAndRender {
 	public static int minHeight = 8;
 	private ScannedColumn[] result = null;
 	private int rows = 480;
+	public static int startRow = 0;
+	public static int endRow = 800;
 	
 	public ScanAndRender() {
 		super();
@@ -69,14 +73,23 @@ public class ScanAndRender {
 			result[itr] = col;
 			itr++;
 		}
-		Graphics2D image = imageMatrix.createGraphics();
-		for (int i=1; i < result.length; i++) {
-			ScannedColumn col0 = result[i - 1];
-			ScannedColumn col1 = result[i];
-			//image.drawLine(x1, y1, x2, y2);
-		}
 		long et = System.nanoTime() - start;
 		return et;
+	}
+	
+	public BufferedImage renderImage(BufferedImage imageMatrix) {
+		Graphics2D image = imageMatrix.createGraphics();
+		image.setColor(Color.RED);
+		for (int i=1; i < result.length; i++) {
+			ScannedColumn sc = result[i];
+			if (sc.count() > 0) {
+				for (int s=0; s < sc.count(); s++) {
+					image.drawLine(sc.getColumnIndex(), sc.getCenter(s) -1, sc.getColumnIndex(), sc.getCenter(s) +1);
+				}
+			}
+		}
+
+		return imageMatrix;
 	}
 	
 	/**
@@ -88,7 +101,7 @@ public class ScanAndRender {
 	 */
 	private static void scanColumnByColor(ScannedColumn col, BufferedImage image, int columnNumber, int rows) {
 		int counter = 0;
-		for (int i=0; i < rows; i++) {
+		for (int i=startRow; i < endRow; i++) {
 			Color bgr = new Color(image.getRGB(columnNumber,i));
 			if (bgr.getRed() < blackThreshold && bgr.getBlue() < blackThreshold && bgr.getGreen() < blackThreshold) {
 				counter++;
