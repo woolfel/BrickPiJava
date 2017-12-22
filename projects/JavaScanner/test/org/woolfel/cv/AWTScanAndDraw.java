@@ -25,7 +25,7 @@ public class AWTScanAndDraw {
 	public static void main(String[] args) {
 		try {
 			System.out.println("AWTTest -----");
-			String file = "./samples/image1-320.jpg";
+			String file = "./samples/image4-320.jpg";
 			int scanwidth = 5;
 			if (args != null && args.length > 0) {
 				file = args[0];

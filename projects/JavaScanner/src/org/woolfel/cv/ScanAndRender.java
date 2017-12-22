@@ -80,6 +80,11 @@ public class ScanAndRender {
 	public BufferedImage renderImage(BufferedImage imageMatrix) {
 		Graphics2D image = imageMatrix.createGraphics();
 		image.setColor(Color.RED);
+		this.drawLine(image);
+		return imageMatrix;
+	}
+	
+	private void drawBlocks(Graphics2D image) {
 		for (int i=1; i < result.length; i++) {
 			ScannedColumn sc = result[i];
 			if (sc.count() > 0) {
@@ -88,8 +93,25 @@ public class ScanAndRender {
 				}
 			}
 		}
-
-		return imageMatrix;
+	}
+	
+	private void drawLine(Graphics2D image) {
+		for (int i=1; i < result.length; i++) {
+			ScannedColumn sc = result[i];
+			ScannedColumn next = null;
+			if (i < (result.length - 1) && result[i + 1].count() > 0) {
+				next = result[i + 1];
+			}
+			if (sc.count() > 0) {
+				for (int s=0; s < sc.count(); s++) {
+					if (next != null) {
+						image.drawLine(sc.getColumnIndex(), sc.getCenter(s), next.getColumnIndex(), next.getCenter(s));
+					} else {
+						image.drawLine(sc.getColumnIndex(), sc.getCenter(s) -1, sc.getColumnIndex(), sc.getCenter(s) +1);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
