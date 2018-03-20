@@ -3,8 +3,6 @@ package org.woolfel.cv;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Scan and render will detect the line and draw a line through
@@ -64,7 +62,7 @@ public class ScanAndRender {
 		double size = (double)imageMatrix.getWidth()/(double)scanwidth;
 		this.result = new ScannedColumn[(int)Math.ceil(size)];
 		rows = imageMatrix.getHeight();
-		long start = System.nanoTime();
+		long start = System.currentTimeMillis();
 		int itr = 0;
 		for (int i=0; i < imageMatrix.getWidth(); i+=scanwidth) {
 			ScannedColumn col = new ScannedColumn();
@@ -73,7 +71,7 @@ public class ScanAndRender {
 			result[itr] = col;
 			itr++;
 		}
-		long et = System.nanoTime() - start;
+		long et = System.currentTimeMillis() - start;
 		return et;
 	}
 	

@@ -3,7 +3,6 @@ package org.woolfel.cv;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -46,9 +45,9 @@ public class AWTScanAndDraw {
 				System.out.println(c);
 			}
 			BufferedImage newimg = scanner.renderImage(image);
+			System.out.println("time= " + t);
 			String output = "./scanned-result.jpg";
 			ImageIO.write(newimg, "jpg", new File(output));
-			System.out.println("time= " + t);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
